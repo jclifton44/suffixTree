@@ -1,109 +1,79 @@
-import java.util.ArrayList;
+package SuffixTree;
+import java.util.TreeSet;
+import java.util.Arrays;
 
 public class SuffixTreeNode implements Comparable{
-	ArrayList<SuffixTreeNode> children = new ArrayList<SuffixTreeNode>();
+	TreeSet<SuffixTreeNode> children = new TreeSet<SuffixTreeNode>();
+	boolean isRoot = false;
 	SuffixTreeNode parent = null;
 	String label = null;
 	int depth=1;
-	public SuffixTreeNode(String s) {
-		// TODO Auto-generated constructor stub
-		label = s;
+	char characterMarker = '$';
+	public SuffixTreeNode() {
+		characterMarker = 2 ;
+		isRoot = true;
 	}
-	public SuffixTreeNode(String s, SuffixTreeNode p) {
+	public SuffixTreeNode(char c, SuffixTreeNode p) {
 		parent = p;
-		label = s;
+		characterMarker = c;
 		if(p != null) {
 			depth = p.depth + 1;
 		}
+		//System.out.println("Parent " + p.characterMarker);
 	}
-	public SuffixTreeNode(){}
-	public void insertIn(String substring) {
-		if(label == null) {
-			label = "root";
-			//System.out.println("Root: "+substring);
-			this.insertIn(substring);
-			return;
-		} else {
-			
-			int match = SuffixTree.prefixMatch(substring.toCharArray(), label.toCharArray());
-			if(match < label.length() && match > 0) {
-				//new label
-				//LABEL: ABABC
-				//SUBST: ABAB
-				if(substring.length() >= match) {
-					//EXAMP:
-					//LABEL: ABABC
-					//SUBST: ABAB
-					//LABEL: A
-					//SUBST: 
-					
-					SuffixTreeNode stn = new SuffixTreeNode(label.substring(match,label.length()),this);
-					for(SuffixTreeNode s: this.children) {
-						stn.children.add(s);
-					}
-					this.children.clear();
-					this.children.add(stn); 
-					if((substring.substring(match,substring.length()).length() > match)) {
-						SuffixTreeNode substringstn = new SuffixTreeNode(substring.substring(match, substring.length()), this);
-						this.children.add(substringstn);
-					}
-				}
-				label = substring.substring(0,match);
 
-				//create new label
-				//give all children of old label to new label
-				
-				//add child for substring(0, match)
-			} else if(match == label.length() || match == 0){
-				//if substring contains post-suffix
-				//look through labels children
-				//if no match create leaf
-				//if substring is exact copy of label with no matching children
-				//create new leaf
-				
-				Boolean inTree = false;
-				int childrenMatch = 0;
-				for(SuffixTreeNode s: this.children) {
-					childrenMatch = SuffixTree.prefixMatch(s.label.toCharArray(), substring.substring(match,substring.length()).toCharArray());
-					//System.out.println("childrenmatch " + childrenMatch);
-					if(0 < childrenMatch){
-						if(childrenMatch == s.label.length()) {
-							//Do nothing / Node Exists in Tree
-						} else {
-							//Insert into submatching node
-							s.insertIn(substring);
-						}
-						inTree = true;
-					}
-				}
-				if(!inTree) {
-					this.children.add(new SuffixTreeNode(substring.substring(match, substring.length()),this));
+	public void insertIn(char[] b) {
+		SuffixTreeNode match = null;
+		if(b.length != 0) {
+			for(SuffixTreeNode s: children) {
+				if(s.characterMarker == b[0]) {
+					match = s;
 				}
 			}
+			if(match == null) {
+				//System.out.println("No child match " + b[0]);
+				match = new SuffixTreeNode(b[0], this);
+			}
+			match.insertIn(Arrays.copyOfRange(b, 1, b.length));
+		} else {
+			match = new SuffixTreeNode((char)3, this);
 		}
+		children.add(match);
+
+		
 	}
+
 	public void displayNode() {
 		// TODO Auto-generated method stub
 		//System.out.println("Children Size: " + this.children.size());
+		if(this.parent != null ) {
+			System.out.println(depth + " " + characterMarker + " P: " + this.parent.characterMarker);
+		} else {
+			System.out.println(depth + " " + characterMarker);
+		}
 		for(SuffixTreeNode node: this.children) {
-			System.out.println(node.depth + " " + node.label);
 			node.displayNode();
 			
 		}
-		for(SuffixTreeNode node: this.children) {
-			//node.displayNode();
-			//System.out.println("----");
-		}
+
 
 	}
 	public int compareTo(SuffixTreeNode arg0) {
 		// TODO Auto-generated method stub
-		return this.label.compareTo(((SuffixTreeNode)arg0).label);
+		if(this.characterMarker > arg0.characterMarker) {return 1;}
+		else if(this.characterMarker < arg0.characterMarker) {return -1;}
+		else {
+			return 0;
+		}
 	}
 	@Override
 	public int compareTo(Object o) {
 		// TODO Auto-generated method stub
-		return this.label.compareTo(((SuffixTreeNode)o).label);
+		if(this.characterMarker > ((SuffixTreeNode)o).characterMarker) {return 1;}
+		else if(this.characterMarker < ((SuffixTreeNode)o).characterMarker) {return -1;}
+		else {
+			return 0;
+		}
 	}
 
 }
